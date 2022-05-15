@@ -6,10 +6,11 @@
 class Button{
     public:
         ~Button();
-        Button(int x, int y, int w, int h);
+        Button();
 
         int buttonSprite;
 
+        void Init(int x, int y, int w, int h);
         bool MouseOnButton(int x, int y);
         void Render(SDL_Renderer* renderer, Texture buttonTexture, SDL_Rect* clip);
         void HandleEvent(SDL_Event* e);

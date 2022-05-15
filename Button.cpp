@@ -1,15 +1,21 @@
 #include "Button.h"
 
-Button::Button(int x, int y, int w, int h){
+Button::Button(){
+    buttonSprite = BUTTON_OUT;
+    buttonPosition.x = 0;
+    buttonPosition.y = 0; 
+}
+
+Button::~Button(){
+
+}
+
+void Button::Init(int x, int y, int w, int h){
     buttonSprite = BUTTON_OUT;
     buttonPosition.x = x;
     buttonPosition.y = y; 
     buttonWidth = w;
     buttonHeight = h;
-}
-
-Button::~Button(){
-
 }
 
 bool Button::MouseOnButton(int x, int y){
