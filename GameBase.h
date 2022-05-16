@@ -19,7 +19,7 @@ const int BUTTON_HEIGHT = 75;
 
 const int MAX_LENGTH = 1000;
 
-const int ADDTIME = 100;
+const int ADDTIME = 200;
 
 //board
 
@@ -51,8 +51,8 @@ enum Screen{
 
 enum Move{
     LEFT,
-    RIGHT,
     UP,
+    RIGHT,
     DOWN
 };
 

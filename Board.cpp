@@ -1,13 +1,5 @@
 #include "Board.h"
 
-Board::Board(){
-
-}
-
-Board::~Board(){
-
-}
-
 void Board::Reset(){
     for (int i = 0; i < BOARD_WIDTH; i ++)
         for (int j = 0; j < BOARD_HEIGHT; j ++)
@@ -16,6 +8,7 @@ void Board::Reset(){
 
 void Board::Init(){
     board[2][2] = board[2][3] = board[2][4] = SNAKE;
+    SpawnFood();
 }
 
 void Board::Update(int checkType){
@@ -29,13 +22,30 @@ void Board::Update(int checkType){
 
 void Board::Move(int moveType){
     int checkType = MoveCheck(moveType);
-    if(checkType)
-        snake.Move(moveType),
+    if(checkType){
+        snake.Move(moveType);
         Update(checkType);
+    }
+    else if(checkType == 2){
+        snake.Move(moveType);
+        Update(checkType);
+        snake.Growth();
+        SpawnFood();
+    }
 }
 
 void Board::ForceMove(){
-    snake.ForceMove();
+    int checkType = MoveCheck(snake.GetDirection());
+    if(checkType == 2){
+        snake.ForceMove();
+        Update(checkType);
+        snake.Growth();
+        SpawnFood();
+    }
+    else if(checkType){
+        snake.ForceMove();
+        Update(checkType);
+    }
 }
 
 int Board::MoveCheck(int moveType){
@@ -44,13 +54,13 @@ int Board::MoveCheck(int moveType){
 
     if(abs(moveType - dir) == 2)
         return 0; // opposite direction
-    if(dir == UP)
+    if(moveType == UP)
         head.second --;
-    if(dir == DOWN)
+    if(moveType == DOWN)
         head.second ++;
-    if(dir == LEFT)
+    if(moveType == LEFT)
         head.first --;
-    if(dir == RIGHT)
+    if(moveType == RIGHT)
         head.first ++;
     
     if(board[head.second][head.first] == SNAKE)
@@ -81,11 +91,31 @@ void Board::SpawnFood(){
 void Board::DrawBoard(SDL_Renderer *renderer){
     boardTex.Render(renderer, 0, 0, &boardTexClip);
     playField.Render(renderer, 64, 64, &playFieldClip);
+    foodTex.Render(renderer, BOARD_X + food.second * 32, 
+                             BOARD_Y + food.first  * 32, &foodTexClip);
     snake.Draw(renderer);
+
+    // for(int i = 0; i < BOARD_WIDTH; i ++){
+    //     for(int j = 0; j < BOARD_HEIGHT; j ++)
+    //         cerr << board[i][j];
+    //     cerr << '\n';
+    // }
+    // cerr << '\n';
 }
 
 void Board::TextureInit(SDL_Renderer* renderer){
     boardTex.LoadTextureFromFile("images/play_board.png", renderer);
     playField.LoadTextureFromFile("images/play_field.png", renderer);
+    foodTex.LoadTextureFromFile("images/food.png", renderer);
     snake.Init(renderer);
+}
+
+Board::Board(){
+
+}
+
+Board::~Board(){
+    boardTex.FreeTexture();
+    playField.FreeTexture();
+    foodTex.FreeTexture();
 }

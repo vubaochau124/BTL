@@ -24,8 +24,10 @@ public:
 private:
 
   Texture head;
+  Texture headOpen;
   Texture body;
   Texture tail;
+  Texture bodyTurn;
 
   SDL_Rect headclip = {0, 0, 32, 32};
   SDL_Rect bodyclip = {0, 0, 32, 32};

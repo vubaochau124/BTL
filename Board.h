@@ -31,9 +31,11 @@ class Board{
 
         Texture boardTex;
         Texture playField;
+        Texture foodTex;
 
         SDL_Rect boardTexClip = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
         SDL_Rect playFieldClip = {0, 0, 832, 512};
+        SDL_Rect foodTexClip = {0, 0, 32, 32};
 
         Snake snake;
 };

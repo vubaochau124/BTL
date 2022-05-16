@@ -8,6 +8,8 @@ Snake::~Snake(){
   head.FreeTexture();
   body.FreeTexture();
   tail.FreeTexture();
+  bodyTurn.FreeTexture();
+  headOpen.FreeTexture();
 }
 
 void Snake::Init(SDL_Renderer* renderer){
@@ -25,6 +27,8 @@ void Snake::Init(SDL_Renderer* renderer){
   head.LoadTextureFromFile("images/head.png", renderer);
   body.LoadTextureFromFile("images/body.png", renderer);
   tail.LoadTextureFromFile("images/tail.png", renderer);
+  bodyTurn.LoadTextureFromFile("images/body_turn", renderer);
+  headOpen.LoadTextureFromFile("images/head_open", renderer);
 }
 
 void Snake::Draw(SDL_Renderer* renderer){
