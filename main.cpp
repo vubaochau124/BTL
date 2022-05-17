@@ -13,8 +13,12 @@ int main(int argc, char* argv[]) {
   while(isRunning){
     if(sGame.GetScreen() == HOME)
       sGame.HomeScreen();
+    else if(sGame.GetScreen() == MODE)
+      sGame.ModeScreen();
     else if(sGame.GetScreen() == GAME)
       sGame.MainGame();
+    else if(sGame.GetScreen() == OVER)
+      sGame.GameOver();
     else
       isRunning = false;
   }

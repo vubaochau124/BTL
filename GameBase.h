@@ -9,6 +9,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <deque>
+#include <vector>
 
 using namespace std;
 
@@ -20,10 +21,10 @@ const int BUTTON_HEIGHT = 75;
 
 //board
 
-const int BOARD_X = 64;
-const int BOARD_Y = 64;
 const int BOARD_WIDTH = 20;
 const int BOARD_HEIGHT = 15;
+
+const int OFFSET = 30;
 
 enum Block{
     FOOD,
@@ -42,6 +43,8 @@ enum ButtonSprite{
 enum Screen{
 	HOME,
 	GAME,
+    MODE,
+    OVER,
     ELSE
 };
 

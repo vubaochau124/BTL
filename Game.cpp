@@ -23,7 +23,7 @@ void Game::HomeScreen(){
 
     if(sPlay.buttonSprite == BUTTON_DOWN){
       sPlay.buttonSprite = BUTTON_DEFAULT;
-      screen = GAME;
+      screen = MODE;
       isDone = true;
     }
 
@@ -36,6 +36,55 @@ void Game::RenderHomeScreen(){
 
   sHomeTex.Render(renderer, 0, 0, &sHomeTexClip);
   sPlay.Render(renderer, sPlayTex[sPlay.buttonSprite], &sPlayTexClip);
+
+  SDL_RenderPresent(renderer);
+}
+
+void Game::ModeScreen(){
+  SDL_Event e;
+
+  for(auto isDone = false; !isDone; ){
+    if(SDL_PollEvent(&e)){
+      switch (e.type)
+      {
+      case SDL_QUIT:
+        isDone = true;
+        screen = ELSE;
+        break;
+      case SDL_MOUSEMOTION:
+        sClassic.HandleEvent(&e);
+        sCampaign.HandleEvent(&e);
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+        sClassic.HandleEvent(&e);
+        sCampaign.HandleEvent(&e);
+        break;
+
+      default:
+        break;
+      }
+    }
+
+    if(sClassic.buttonSprite == BUTTON_DOWN){
+      sClassic.buttonSprite = BUTTON_DEFAULT;
+      screen = GAME;
+      isDone = true;
+    }
+    if(sCampaign.buttonSprite == BUTTON_DOWN){
+      sCampaign.buttonSprite = BUTTON_DEFAULT;
+      screen = GAME;
+      isDone = true;
+    }
+  RenderModeScreen();
+  }
+}
+
+void Game::RenderModeScreen(){
+  SDL_RenderClear(renderer);
+
+  sModeTex.Render(renderer, 0, 0, &sModeTexClip);
+  sClassic.Render(renderer, sClassicTex[sClassic.buttonSprite], &sClassicTexClip);
+  sCampaign.Render(renderer, sCampaignTex[sCampaign.buttonSprite], &sCampaignTexClip);
 
   SDL_RenderPresent(renderer);
 }
@@ -83,7 +132,7 @@ void Game::MainGame(){
     for(auto i = tick; i < newTick; i ++)
       if(!GameTick())
         isDone = true,
-        screen = HOME;
+        screen = OVER;
     tick = newTick;
     
     RenderMainGame();
@@ -99,6 +148,54 @@ void Game::RenderMainGame(){
   // draw the snake
   sSnake.Draw(renderer);
   
+  SDL_RenderPresent(renderer);
+}
+
+void Game::GameOver(){
+  SDL_Event e;
+
+  for (auto isDone = false; !isDone;){
+    if(SDL_PollEvent(&e)){
+      switch (e.type)
+      {
+      case SDL_QUIT:
+        isDone = true;
+        screen = ELSE;
+        break;
+      case SDL_MOUSEMOTION:
+        sRetry.HandleEvent(&e);
+        sBack.HandleEvent(&e);
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+        sRetry.HandleEvent(&e);
+        sBack.HandleEvent(&e);
+      default:
+        break;
+      }
+
+      if(sRetry.buttonSprite == BUTTON_DOWN){
+        sRetry.buttonSprite = BUTTON_DEFAULT;
+        screen = GAME;
+        isDone = true;
+      }
+      if(sBack.buttonSprite == BUTTON_DOWN){
+        sBack.buttonSprite = BUTTON_DEFAULT;
+        screen = HOME;
+        isDone = true;
+      }
+      
+    }
+    RenderGameOver();
+  }
+}
+
+void Game::RenderGameOver(){
+  SDL_RenderClear(renderer);
+
+  sOverTex.Render(renderer, 0, 0, &sOverTexClip);
+  sRetry.Render(renderer, sRetryTex[sRetry.buttonSprite], &sRetryTexClip);
+  sBack.Render(renderer, sBackTex[sBack.buttonSprite], &sBackTexClip);
+
   SDL_RenderPresent(renderer);
 }
 
@@ -137,18 +234,42 @@ Game::Game(){
   sPlayTex[BUTTON_DEFAULT].LoadTextureFromFile("images/play.png", renderer);
   sPlayTex[BUTTON_HOVERED].LoadTextureFromFile("images/play_hovered.png", renderer);
 
+  // Mode
+
+  sClassic.Init(350, 350, 250, 100);
+  sCampaign.Init(350, 500, 250, 100);
+
+  sModeTex.LoadTextureFromFile("images/mode_screen.png", renderer);
+  sClassicTex[BUTTON_DEFAULT].LoadTextureFromFile("images/classic.png", renderer);
+  sClassicTex[BUTTON_HOVERED].LoadTextureFromFile("images/classic_hovered.png", renderer);
+  sCampaignTex[BUTTON_DEFAULT].LoadTextureFromFile("images/campaign.png", renderer);
+  sCampaignTex[BUTTON_HOVERED].LoadTextureFromFile("images/campaign_hovered.png", renderer);
+  
+  // Game
   sSnake.Init(renderer);
 
   sBoardTex.LoadTextureFromFile("images/play_board.png", renderer);
 
+  // Game Over 
+  sRetry.Init(350, 370, 250, 100);
+  sBack.Init(350, 500, 250, 100);
+
+  sOverTex.LoadTextureFromFile("images/game_over.png", renderer);
+  sRetryTex[BUTTON_DEFAULT].LoadTextureFromFile("images/retry_button.png", renderer);
+  sRetryTex[BUTTON_HOVERED].LoadTextureFromFile("images/retry_button_hovered.png", renderer);
+  sBackTex[BUTTON_DEFAULT].LoadTextureFromFile("images/quit_button.png", renderer);
+  sBackTex[BUTTON_HOVERED].LoadTextureFromFile("images/quit_button_hovered.png", renderer);
 }
 
 Game::~Game(){
   // Home
   sHomeTex.FreeTexture();
+  sOverTex.FreeTexture();
   sPlayTex[BUTTON_DEFAULT].FreeTexture();
   sPlayTex[BUTTON_HOVERED].FreeTexture();
-
+  sRetryTex[BUTTON_DEFAULT].FreeTexture();
+  sRetryTex[BUTTON_HOVERED].FreeTexture();
+  
   SDL_DestroyWindow(window);
   SDL_DestroyRenderer(renderer);
 

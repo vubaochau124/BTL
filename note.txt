@@ -1,2 +1,6 @@
-cant spawn food & eat food
-
+- Doing level transition
+- Snake's speed
+- Snake's spawn position
+- Score
+- Mixer :D
+- Progression bar
