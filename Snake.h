@@ -1,6 +1,8 @@
 #ifndef SNAKE_H
 #define SNAKE_H
 
+#include "GameBase.h"
+#include "Button.h"
 #include "Texture.h"
 
 class Snake{
@@ -8,36 +10,31 @@ public:
   Snake();
   ~Snake();
 
-  void Init(SDL_Renderer* renderer);
-  void Draw(SDL_Renderer* renderer);
-
   void Move(int moveType);
-  void ForceMove();
-  bool checkMove();
 
-  void Growth();
+  bool GameTick();
+  void FoodGen();
 
-  pair<int,int> GetHeadPos();
-  pair<int,int> GetTailPos();
-  int GetDirection();
+  void Draw(SDL_Renderer* renderer);
+  void Init(SDL_Renderer* renderer);
+  void Reset();
 
 private:
+  Texture sHead;
+  Texture sBody;
+  Texture sBodyTurn;
+  Texture sTail;
+  Texture sFood;
 
-  Texture head;
-  Texture headOpen;
-  Texture body;
-  Texture tail;
-  Texture bodyTurn;
+  int gameTick = 0;
+  int dx = 1;
+  int dy = 0;
+  int foodX;
+  int foodY;
 
-  SDL_Rect headclip = {0, 0, 32, 32};
-  SDL_Rect bodyclip = {0, 0, 32, 32};
-  SDL_Rect tailclip = {0, 0, 32, 32};
+  int MOVE_TIME = 200;
 
-  int length;
-  int direction;
-  
-  pair<int, int> currentSnake[MAX_LENGTH];
-  pair<int, int> lastTail;
+  deque< pair<int, int> > snakeQueue;
 };
 
 #endif

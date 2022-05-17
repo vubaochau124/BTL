@@ -1,23 +1,30 @@
 #include "Game.h"
 
 void Game::HomeScreen(){
-  bool HomeScreenRunning = true;
   SDL_Event e;
 
-  while(HomeScreenRunning){
-    while(SDL_PollEvent(&e)){
-      if(e.type == SDL_QUIT)
-        screen = QUIT_SCREEN;
-        HomeScreenRunning = false;
-
-      if(e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN){
-        gPlayButton.HandleEvent(&e);
+  for(auto isDone = false; !isDone; ){
+    if(SDL_PollEvent(&e)){
+      switch (e.type)
+      {
+      case SDL_QUIT:
+        isDone = true;
+        screen = ELSE;
+        break;
+      case SDL_MOUSEMOTION:
+        sPlay.HandleEvent(&e);
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+        sPlay.HandleEvent(&e);
+      default:
+        break;
       }
     }
 
-    if(gPlayButton.buttonSprite == BUTTON_DOWN){
-      screen = GAME_SCREEN;
-      HomeScreenRunning = false;
+    if(sPlay.buttonSprite == BUTTON_DOWN){
+      sPlay.buttonSprite = BUTTON_DEFAULT;
+      screen = GAME;
+      isDone = true;
     }
 
     RenderHomeScreen();
@@ -25,63 +32,84 @@ void Game::HomeScreen(){
 }
 
 void Game::RenderHomeScreen(){
-  SDL_RenderClear(gRenderer);
-  gHomeScreen.Render(gRenderer, 0, 0, &gHomeScreenClip);
-  gPlayButton.Render(gRenderer, gPlayButtonTex[gPlayButton.buttonSprite], &gPlayButtonClip);
-  SDL_RenderPresent(gRenderer);
+  SDL_RenderClear(renderer);
+
+  sHomeTex.Render(renderer, 0, 0, &sHomeTexClip);
+  sPlay.Render(renderer, sPlayTex[sPlay.buttonSprite], &sPlayTexClip);
+
+  SDL_RenderPresent(renderer);
 }
 
-void Game::GameScreen(){
-  bool GameRunning = true;
-  int MoveTime = SDL_GetTicks();
+void Game::MainGame(){
+  sSnake.Reset();
+
+  int tick = SDL_GetTicks();
   SDL_Event e;
-
-  while(GameRunning){
-    while(SDL_PollEvent(&e)){
-      if(e.type == SDL_QUIT){
-        GameRunning = false;
-        screen = QUIT_SCREEN;
-      }
-
-      if(e.type == SDL_KEYDOWN){
-        if(e.key.keysym.sym == SDLK_UP){
-          gBoard.Move(UP);
-          MoveTime = SDL_GetTicks() + ADDTIME;
+  
+  for(auto isDone = false; !isDone;){
+    if(SDL_PollEvent(&e)){
+      switch (e.type)
+      {
+      case SDL_QUIT:
+        screen = ELSE;
+        isDone = true;
+        break;
+      case SDL_KEYDOWN:
+        switch (e.key.keysym.sym)
+        {
+        case SDLK_UP:
+          sSnake.Move(UP);
+          break;
+        case SDLK_DOWN:
+          sSnake.Move(DOWN);
+          break;
+        case SDLK_LEFT:
+          sSnake.Move(LEFT);
+          break;
+        case SDLK_RIGHT:
+          sSnake.Move(RIGHT);
+          break;
+        
+        default:
+          break;
         }
-        if(e.key.keysym.sym == SDLK_DOWN){
-          gBoard.Move(DOWN);
-          MoveTime = SDL_GetTicks() + ADDTIME;
-        }
-        if(e.key.keysym.sym == SDLK_LEFT){
-          gBoard.Move(LEFT);
-          MoveTime = SDL_GetTicks() + ADDTIME;
-        }
-        if(e.key.keysym.sym == SDLK_RIGHT){
-          gBoard.Move(RIGHT);
-          MoveTime = SDL_GetTicks() + ADDTIME;
-        }
+      default:
+        break;
       }
     }
-    if (MoveTime < SDL_GetTicks()){
-      MoveTime += ADDTIME;
-      gBoard.ForceMove();
-    }
 
-    RenderGameScreen();
+    // tick by tick movement
+    int newTick = SDL_GetTicks();
+    for(auto i = tick; i < newTick; i ++)
+      if(!GameTick())
+        isDone = true,
+        screen = HOME;
+    tick = newTick;
+    
+    RenderMainGame();
+    
   }
 }
 
-void Game::RenderGameScreen(){
-  SDL_RenderClear(gRenderer);
+void Game::RenderMainGame(){
+  SDL_RenderClear(renderer);
 
-  gBoard.DrawBoard(gRenderer);
-
-  SDL_RenderPresent(gRenderer);
+  // draw the board later
+  sBoardTex.Render(renderer, 0, 0, &sBoardTexClip);
+  // draw the snake
+  sSnake.Draw(renderer);
+  
+  SDL_RenderPresent(renderer);
 }
 
-int Game::GetScreen(){
-  return screen;
+bool Game::GameTick(){
+  return sSnake.GameTick();
 }
+
+void Game::GenerateLevel(){
+
+}
+
 
 Game::Game(){
 
@@ -94,34 +122,40 @@ Game::Game(){
     cout << "SDL could not init png. " <<  SDL_GetError() << '\n';
   }
   else {
-    gWindow = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    window = SDL_CreateWindow("game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
     SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
-    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 128); 
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128); 
   }
 
-  screen = HOME_SCREEN;
+  screen = HOME;
 
-  //home screen
+  // Home
+  sPlay.Init(350, 500, 250, 100);
 
-  gHomeScreen.LoadTextureFromFile("images/screen.png", gRenderer);
+  sHomeTex.LoadTextureFromFile("images/screen.png", renderer);
+  sPlayTex[BUTTON_DEFAULT].LoadTextureFromFile("images/play.png", renderer);
+  sPlayTex[BUTTON_HOVERED].LoadTextureFromFile("images/play_hovered.png", renderer);
 
-  gPlayButtonTex[BUTTON_OUT].LoadTextureFromFile("images/play.png", gRenderer);
-  gPlayButtonTex[BUTTON_OVER].LoadTextureFromFile("images/play_hovered.png", gRenderer);
-  gPlayButtonTex[BUTTON_DOWN].LoadTextureFromFile("images/play_clicked.png", gRenderer);
+  sSnake.Init(renderer);
 
-  gPlayButton.Init(400,500,250,100);
+  sBoardTex.LoadTextureFromFile("images/play_board.png", renderer);
 
-  //play screen;
-
-  gBoard.TextureInit(gRenderer);
 }
 
 Game::~Game(){
-  SDL_DestroyWindow(gWindow);
-  gWindow = NULL;
-  SDL_DestroyRenderer(gRenderer);
-  gRenderer = NULL;
-  gHomeScreen.FreeTexture();
+  // Home
+  sHomeTex.FreeTexture();
+  sPlayTex[BUTTON_DEFAULT].FreeTexture();
+  sPlayTex[BUTTON_HOVERED].FreeTexture();
+
+  SDL_DestroyWindow(window);
+  SDL_DestroyRenderer(renderer);
+
+  IMG_Quit();
   SDL_Quit();
+}
+
+int Game::GetScreen(){
+  return screen;
 }

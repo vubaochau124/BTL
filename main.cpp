@@ -1,29 +1,23 @@
-#include "GameBase.h"
-#include "Texture.h"
 #include "Button.h"
-#include "Snake.h"
 #include "Game.h"
+#include "GameBase.h"
+#include "Snake.h"
+#include "Texture.h"
 
-Game game;
+// *************************************************************************
 
-int main( int argc, char* args[] )
-{
-  bool GameRunning = true;
-  
-  SDL_Event e;
+Game sGame;
 
-  while(GameRunning){
-    if(game.GetScreen() == HOME_SCREEN)
-      game.HomeScreen();
-    else if(game.GetScreen() == GAME_SCREEN)
-      game.GameScreen();
+int main(int argc, char* argv[]) {
+  bool isRunning = true;
+  while(isRunning){
+    if(sGame.GetScreen() == HOME)
+      sGame.HomeScreen();
+    else if(sGame.GetScreen() == GAME)
+      sGame.MainGame();
     else
-      GameRunning = false;
+      isRunning = false;
   }
-  
-  IMG_Quit();
-  SDL_Quit();
 
-	return 0;
+  return 0;
 }
-

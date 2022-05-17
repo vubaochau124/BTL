@@ -1,128 +1,218 @@
 #include "Snake.h"
 
 Snake::Snake(){
-  
+  snakeQueue.push_back(make_pair(5, 7));
+  snakeQueue.push_back(make_pair(5, 6));
+  snakeQueue.push_back(make_pair(5, 5));
+
+  FoodGen();
 }
 
 Snake::~Snake(){
-  head.FreeTexture();
-  body.FreeTexture();
-  tail.FreeTexture();
-  bodyTurn.FreeTexture();
-  headOpen.FreeTexture();
-}
-
-void Snake::Init(SDL_Renderer* renderer){
-  // length
-  length = 3;
-
-  for (int i=0; i< length; i++){
-    currentSnake[i].first = 4-i;
-    currentSnake[i].second = 2;
-  }
-  // direction
-  direction = RIGHT;
-
-  // image
-  head.LoadTextureFromFile("images/head.png", renderer);
-  body.LoadTextureFromFile("images/body.png", renderer);
-  tail.LoadTextureFromFile("images/tail.png", renderer);
-  bodyTurn.LoadTextureFromFile("images/body_turn", renderer);
-  headOpen.LoadTextureFromFile("images/head_open", renderer);
-}
-
-void Snake::Draw(SDL_Renderer* renderer){
-  for(int i = 0; i < length; i ++){
-    if(i == 0){
-      // head
-      // head.Render(x, y)
-      head.Render(renderer, BOARD_X + currentSnake[i].first*32, 
-                  BOARD_Y + currentSnake[i].second*32, &headclip);
-    }
-    else if(i == length - 1){
-      // tail
-      tail.Render(renderer, BOARD_X + currentSnake[i].first*32, 
-                  BOARD_Y + currentSnake[i].second*32, &headclip);
-    }
-    else{
-      // body 
-      body.Render(renderer, BOARD_X + currentSnake[i].first*32, 
-                  BOARD_Y + currentSnake[i].second*32, &headclip);
-    }
-  }
+  // Game
+  sHead.FreeTexture();
+  sBody.FreeTexture();
+  sBodyTurn.FreeTexture();
+  sTail.FreeTexture();
+  sFood.FreeTexture();
 }
 
 void Snake::Move(int moveType){
-  // neu dang co direction doi lap thi khong move
-  if(moveType == UP){
-    lastTail = currentSnake[length - 1];
-    for(int i = length - 1; i > 0; i --)
-      currentSnake[i] = currentSnake[i - 1];
-    currentSnake[0].second --;
-    direction = UP;
-  }
-  if(moveType == DOWN){
-    lastTail = currentSnake[length - 1];
-    for(int i = length - 1; i > 0; i --)
-      currentSnake[i] = currentSnake[i - 1];
-    currentSnake[0].second ++;
-    direction = DOWN;
-  }
-  if(moveType == LEFT){
-    lastTail = currentSnake[length - 1];
-    for(int i = length - 1; i > 0; i --)
-      currentSnake[i] = currentSnake[i - 1];
-    currentSnake[0].first --;
-    direction = LEFT;
-  } 
-  if(moveType == RIGHT){
-    lastTail = currentSnake[length - 1];
-    for(int i = length - 1; i > 0; i --)
-      currentSnake[i] = currentSnake[i - 1];
-    currentSnake[0].first ++;
-    direction = RIGHT;
+  switch (moveType)
+  {
+  case UP:
+    if(dx != 0 || dy != 1)
+      dx = 0,
+      dy = -1,
+      MOVE_TIME = 100;
+    break;
+  case DOWN:
+    if(dx != 0 || dy != -1)
+      dx = 0,
+      dy = 1,
+      MOVE_TIME = 100;
+    break;
+  case LEFT:
+    if(dx != 1 || dy != 0)
+      dx = -1,
+      dy = 0,
+      MOVE_TIME = 100;
+    break;
+  case RIGHT:
+    if(dx != -1 || dy != 0)
+      dx = 1,
+      dy = 0,
+      MOVE_TIME = 100;
+    break;
+  default:
+    MOVE_TIME = 200;
+    break;
   }
 }
 
-void Snake::ForceMove(){
-  lastTail = currentSnake[length - 1];
-  for (int i = length - 1; i > 0; i --){
-    currentSnake[i] = currentSnake[i - 1];
-  }
-  if (direction == UP)
-    currentSnake[0].second --;
-  if (direction == DOWN)
-    currentSnake[0].second ++;
-  if (direction == LEFT)
-    currentSnake[0].first --;
-  if (direction == RIGHT)
-    currentSnake[0].first ++;
-  currentSnake[0].first = (currentSnake[0].first + BOARD_WIDTH) % BOARD_WIDTH; 
-  currentSnake[0].second = (currentSnake[0].second + BOARD_HEIGHT) % BOARD_HEIGHT;
-}
-
-bool Snake::checkMove(){
-  // check currentSnake[0]
-  for (int i = 1; i < length; i++)
-    if (currentSnake[0] == currentSnake[i])
-      return false;
+bool Snake::GameTick(){
+  if(gameTick++ % MOVE_TIME == 0){
+    // execute the move
+    pair<int, int> head = snakeQueue.front();
+    head.first += dx;
+    head.second += dy;
     
+    // hit the snake body
+    for(auto &it: snakeQueue)
+      if(it == head){
+        return false;
+      }
+    
+    // if hit the board border, appear on the other side of the board
+    if(head.first < 0 || head.first >= BOARD_WIDTH || 
+       head.second < 0 || head.second >= BOARD_HEIGHT){
+      head.first = (head.first + BOARD_WIDTH) % BOARD_WIDTH;
+      head.second = (head.second + BOARD_HEIGHT) % BOARD_HEIGHT;
+    }
+
+    // push the new move in
+    snakeQueue.push_front(head);
+    // not hit the food
+    if(head.first != foodX || head.second != foodY)
+      snakeQueue.pop_back();
+    else
+      FoodGen();
+  }
   return true;
 }
 
-void Snake::Growth(){
-  length ++;
-  currentSnake[length - 1] = lastTail;
+void Snake::FoodGen(){
+  for(auto rng = true; rng; ){
+    foodX = rand() % BOARD_WIDTH;
+    foodY = rand() % BOARD_HEIGHT;
+
+    rng = false;
+    for(auto it = snakeQueue.begin(); it != snakeQueue.end(); it ++){
+      if(it->first == foodX && it->second == foodY){
+        rng = true;
+        break;
+      }
+    }
+  }
 }
 
-pair<int, int> Snake::GetHeadPos(){
-  return currentSnake[0];
+void Snake::Draw(SDL_Renderer* renderer){
+  SDL_Rect dst = {0, 0, 32, 32};
+  int deltaS[][3] = {
+    {-1, 0, 0}, 
+    {0, -1, 90}, 
+    {1, 0, 180}, 
+    {0, 1, 270}
+  };
+
+  for(auto it = snakeQueue.begin(); it != snakeQueue.end(); it ++){
+    auto &curPart = *it;
+    double angle = 0;
+    if(it == snakeQueue.begin()){
+      // draw the head
+
+      auto &nextPart = *(it + 1);
+      for(int i = 0; i < 4; i ++){
+        if((curPart.first + deltaS[i][0] + BOARD_WIDTH) % BOARD_WIDTH == nextPart.first 
+        && (curPart.second + deltaS[i][1] + BOARD_HEIGHT) % BOARD_HEIGHT == nextPart.second){
+          angle = deltaS[i][2];
+          break;
+        }
+      }
+      dst.x = 32 * curPart.first;
+      dst.y = 32 * curPart.second;
+      
+      sHead.RenderEx(renderer, &dst, angle);
+    }
+    else if(it + 1 == snakeQueue.end()){
+      // draw the tail
+
+      auto &prevPart = *(it - 1);
+      for(int i = 0; i < 4; i ++){
+        if(curPart.first == (prevPart.first + deltaS[i][0] + BOARD_WIDTH) % BOARD_WIDTH
+        && curPart.second == (prevPart.second + deltaS[i][1] + BOARD_HEIGHT) % BOARD_HEIGHT){
+          angle = deltaS[i][2];
+          break;
+        }
+      }
+
+      dst.x = 32 * curPart.first;
+      dst.y = 32 * curPart.second;
+
+      sTail.RenderEx(renderer, &dst, angle);
+    }
+    else{
+      auto &nextPart = *(it + 1);
+      auto &prevPart = *(it - 1);
+
+      bool turn = false;
+      if(prevPart.first == nextPart.first)
+        angle = 90;
+      else if(prevPart.second == nextPart.second)
+        angle = 0;
+      else
+        turn = true;
+      
+      if(!turn){
+        dst.x = 32 * curPart.first;
+        dst.y = 32 * curPart.second;
+        sBody.RenderEx(renderer, &dst, angle);
+      }
+      else{
+        bool _up = false, _down = false, _left = false, _right = false;
+        if((curPart.first == nextPart.first && (curPart.second - 1 + BOARD_HEIGHT) % BOARD_HEIGHT == nextPart.second)
+        || (curPart.first == prevPart.first && (curPart.second - 1 + BOARD_HEIGHT) % BOARD_HEIGHT == prevPart.second))
+          _up = true;
+        if((curPart.first == nextPart.first && (curPart.second + 1) % BOARD_HEIGHT == nextPart.second)
+        || (curPart.first == prevPart.first && (curPart.second + 1) % BOARD_HEIGHT == prevPart.second))
+          _down = true;
+        if(((curPart.first - 1 + BOARD_WIDTH) % BOARD_WIDTH == nextPart.first && curPart.second == nextPart.second)
+        || ((curPart.first - 1 + BOARD_WIDTH) % BOARD_WIDTH == prevPart.first && curPart.second == prevPart.second))
+          _left = true;
+        if(((curPart.first + 1) % BOARD_WIDTH == nextPart.first && curPart.second == nextPart.second)
+        || ((curPart.first + 1) % BOARD_WIDTH == prevPart.first && curPart.second == prevPart.second))
+          _right = true;
+
+        if(_up && _right)
+          angle = 0;
+        if(_right && _down)
+          angle = 90;
+        if(_down && _left)
+          angle = 180;
+        if(_left && _up)
+          angle = 270;
+
+        dst.x = 32 * curPart.first;
+        dst.y = 32 * curPart.second;
+
+        sBodyTurn.RenderEx(renderer, &dst, angle);
+      }
+    }
+  }
+
+  // food
+  sFood.Render(renderer, foodX * 32, foodY * 32, &dst);
 }
 
-pair<int, int> Snake::GetTailPos(){
-  return lastTail;
+void Snake::Init(SDL_Renderer* renderer){
+  sHead.LoadTextureFromFile("images/head.png", renderer);
+  sBody.LoadTextureFromFile("images/body.png", renderer);
+  sBodyTurn.LoadTextureFromFile("images/body_turn.png", renderer);
+  sTail.LoadTextureFromFile("images/tail.png", renderer);
+  sFood.LoadTextureFromFile("images/food.png", renderer);
 }
 
-int Snake::GetDirection(){
-  return direction;
+void Snake::Reset(){
+  gameTick = 0;
+  dx = 1;
+  dy = 0;
+
+  while(!snakeQueue.empty())
+    snakeQueue.pop_back();
+
+  snakeQueue.push_back(make_pair(7, 5));
+  snakeQueue.push_back(make_pair(6, 5));
+  snakeQueue.push_back(make_pair(5, 5));
+
+  FoodGen();
 }

@@ -1,7 +1,7 @@
 #include "Button.h"
 
 Button::Button(){
-    buttonSprite = BUTTON_OUT;
+    buttonSprite = BUTTON_DEFAULT;
     buttonPosition.x = 0;
     buttonPosition.y = 0; 
 }
@@ -11,7 +11,7 @@ Button::~Button(){
 }
 
 void Button::Init(int x, int y, int w, int h){
-    buttonSprite = BUTTON_OUT;
+    buttonSprite = BUTTON_DEFAULT;
     buttonPosition.x = x;
     buttonPosition.y = y; 
     buttonWidth = w;
@@ -42,12 +42,12 @@ void Button::HandleEvent(SDL_Event* e){
 
         if (MouseOnButton(x, y)){
             if (e->type == SDL_MOUSEMOTION)
-                buttonSprite = BUTTON_OVER;
+                buttonSprite = BUTTON_HOVERED;
             if (e->type == SDL_MOUSEBUTTONDOWN)
                 buttonSprite = BUTTON_DOWN;
         }
         else
-            buttonSprite = BUTTON_OUT;
+            buttonSprite = BUTTON_DEFAULT;
     }
 }
 

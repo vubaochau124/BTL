@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <ctime>
 #include <cstdlib>
+#include <deque>
 
 using namespace std;
 
@@ -16,10 +17,6 @@ const int SCREEN_HEIGHT = 640;
 
 const int BUTTON_WIDTH = 150;
 const int BUTTON_HEIGHT = 75;
-
-const int MAX_LENGTH = 1000;
-
-const int ADDTIME = 200;
 
 //board
 
@@ -36,17 +33,16 @@ enum Block{
 };
 
 enum ButtonSprite{
-    BUTTON_OUT = 0,
-    BUTTON_OVER = 1,
+    BUTTON_DEFAULT = 0,
+    BUTTON_HOVERED = 1,
     BUTTON_DOWN = 2,
     BUTTON_TOTAL = 3
 };
 
 enum Screen{
-	QUIT_SCREEN,
-	HOME_SCREEN,
-	PAUSE_SCREEN,
-	GAME_SCREEN
+	HOME,
+	GAME,
+    ELSE
 };
 
 enum Move{

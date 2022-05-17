@@ -2,43 +2,40 @@
 #define GAME_H
 
 #include "GameBase.h"
-#include "Texture.h"
-#include "Button.h"
-#include "Board.h"
 #include "Snake.h"
+#include "Texture.h"
 
 class Game{
 public:
   Game();
   ~Game();
 
-  int GetScreen();
-
   void HomeScreen();
   void RenderHomeScreen();
+  void MainGame();
+  void RenderMainGame();
+  bool GameTick();
 
-  void GameScreen();
-  void RenderGameScreen();
+  void GenerateLevel();
+
+  int GetScreen();
 
 private:
-
-  SDL_Window* gWindow;
-  SDL_Renderer* gRenderer; 
-  
+  SDL_Window* window;
+  SDL_Renderer* renderer;
   int screen;
 
-  // homescreen
-  Texture gHomeScreen;
-  Texture gPlayButtonTex[BUTTON_TOTAL];
-  Texture gBoardTex;
+  Button sPlay;
   
-  SDL_Rect gHomeScreenClip = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-  SDL_Rect gPlayButtonClip  = {0, 0, BUTTON_WIDTH, BUTTON_HEIGHT};
-  
-  Button gPlayButton;
+  Texture sHomeTex;
+  Texture sPlayTex[BUTTON_TOTAL];
+  Texture sBoardTex;
 
-  // playscreen
-  Board gBoard;
+  SDL_Rect sHomeTexClip = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+  SDL_Rect sPlayTexClip = {300, 400, 250, 100};
+  SDL_Rect sBoardTexClip = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+
+  Snake sSnake;
 };
 
 #endif
