@@ -12,12 +12,19 @@ public:
 
   void HomeScreen();
   void RenderHomeScreen();
+
   void ModeScreen();
   void RenderModeScreen();
-  void MainGame();
-  void RenderMainGame();
+
+  void ClassicGame();
+  void RenderClassicGame();
+
+  void CampaignGame();
+  void RenderCampaignGame();
+  
   void GameOver();
   void RenderGameOver();
+
   bool GameTick();
 
   void GenerateLevel();

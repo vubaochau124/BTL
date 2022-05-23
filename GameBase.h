@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <algorithm>
 #include <ctime>
@@ -26,6 +27,8 @@ const int BOARD_HEIGHT = 15;
 
 const int OFFSET = 30;
 
+const int MAX_FOOD_COUNT = 18;
+
 enum Block{
     FOOD,
     FREE,
@@ -42,9 +45,11 @@ enum ButtonSprite{
 
 enum Screen{
 	HOME,
-	GAME,
+	CLASSIC,
     MODE,
+    CAMPAIGN,
     OVER,
+    CONGRATULATION,
     ELSE
 };
 

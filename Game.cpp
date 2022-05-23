@@ -67,12 +67,12 @@ void Game::ModeScreen(){
 
     if(sClassic.buttonSprite == BUTTON_DOWN){
       sClassic.buttonSprite = BUTTON_DEFAULT;
-      screen = GAME;
+      screen = CLASSIC;
       isDone = true;
     }
     if(sCampaign.buttonSprite == BUTTON_DOWN){
       sCampaign.buttonSprite = BUTTON_DEFAULT;
-      screen = GAME;
+      screen = CAMPAIGN;
       isDone = true;
     }
   RenderModeScreen();
@@ -89,8 +89,8 @@ void Game::RenderModeScreen(){
   SDL_RenderPresent(renderer);
 }
 
-void Game::MainGame(){
-  sSnake.Reset();
+void Game::ClassicGame(){
+  sSnake.Reset(0); 
 
   int tick = SDL_GetTicks();
   SDL_Event e;
@@ -135,12 +135,12 @@ void Game::MainGame(){
         screen = OVER;
     tick = newTick;
     
-    RenderMainGame();
+    RenderClassicGame();
     
   }
 }
 
-void Game::RenderMainGame(){
+void Game::RenderClassicGame(){
   SDL_RenderClear(renderer);
 
   // draw the board later
@@ -148,6 +148,72 @@ void Game::RenderMainGame(){
   // draw the snake
   sSnake.Draw(renderer);
   
+  SDL_RenderPresent(renderer);
+}
+
+void Game::CampaignGame(){
+  int tick = SDL_GetTicks();
+  SDL_Event e;
+  int currentLevel = 1;
+  sSnake.Reset(currentLevel);
+
+  for(auto isDone = false; !isDone;){
+    if(SDL_PollEvent(&e)){
+      switch (e.type)
+      {
+      case SDL_QUIT:
+        screen = ELSE;
+        isDone = true;
+        break;
+      case SDL_KEYDOWN:
+        switch (e.key.keysym.sym)
+        {
+        case SDLK_UP:
+          sSnake.Move(UP);
+          break;
+        case SDLK_DOWN:
+          sSnake.Move(DOWN);
+          break;
+        case SDLK_LEFT:
+          sSnake.Move(LEFT);
+          break;
+        case SDLK_RIGHT:
+          sSnake.Move(RIGHT);
+          break;
+        default:
+          break;
+        }
+      default:
+        break;
+      }
+    }
+
+    int newTick = SDL_GetTicks();
+    for(auto i = tick; i < newTick; i ++)
+      if(!GameTick())
+        isDone = true,
+        screen = OVER;
+    tick = newTick;
+
+    if(sSnake.IsFull()){
+      if(currentLevel < 5)
+        sSnake.Reset(++currentLevel);
+      else 
+        screen = OVER, // finish screen soon
+        isDone = true;
+    }
+
+    RenderCampaignGame();
+  }
+}
+
+void Game::RenderCampaignGame(){
+  SDL_RenderClear(renderer);
+
+  sBoardTex.Render(renderer, 0, 0, &sBoardTexClip);
+  sSnake.Draw(renderer);
+  sSnake.ProgressBar(renderer);
+
   SDL_RenderPresent(renderer);
 }
 
@@ -175,7 +241,10 @@ void Game::GameOver(){
 
       if(sRetry.buttonSprite == BUTTON_DOWN){
         sRetry.buttonSprite = BUTTON_DEFAULT;
-        screen = GAME;
+        if(sSnake.GetLevel())
+          screen = CAMPAIGN;
+        else
+          screen = CLASSIC;
         isDone = true;
       }
       if(sBack.buttonSprite == BUTTON_DOWN){
@@ -265,10 +334,17 @@ Game::~Game(){
   // Home
   sHomeTex.FreeTexture();
   sOverTex.FreeTexture();
+  sModeTex.FreeTexture();
   sPlayTex[BUTTON_DEFAULT].FreeTexture();
   sPlayTex[BUTTON_HOVERED].FreeTexture();
   sRetryTex[BUTTON_DEFAULT].FreeTexture();
   sRetryTex[BUTTON_HOVERED].FreeTexture();
+  sClassicTex[BUTTON_DEFAULT].FreeTexture();
+  sClassicTex[BUTTON_HOVERED].FreeTexture();
+  sCampaignTex[BUTTON_DEFAULT].FreeTexture();
+  sCampaignTex[BUTTON_HOVERED].FreeTexture();
+  sBackTex[BUTTON_DEFAULT].FreeTexture();
+  sBackTex[BUTTON_HOVERED].FreeTexture();
   
   SDL_DestroyWindow(window);
   SDL_DestroyRenderer(renderer);

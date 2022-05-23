@@ -15,8 +15,10 @@ int main(int argc, char* argv[]) {
       sGame.HomeScreen();
     else if(sGame.GetScreen() == MODE)
       sGame.ModeScreen();
-    else if(sGame.GetScreen() == GAME)
-      sGame.MainGame();
+    else if(sGame.GetScreen() == CLASSIC)
+      sGame.ClassicGame();
+    else if(sGame.GetScreen() == CAMPAIGN)
+      sGame.CampaignGame();
     else if(sGame.GetScreen() == OVER)
       sGame.GameOver();
     else
